@@ -4,11 +4,13 @@
 
 typedef struct No No;
 
-typedef struct Tapete Tapete;
+typedef struct Tapetes Tapetes;
 
 typedef struct Assam Assam;
 
 typedef struct Tabuleiro Tabuleiro;
+
+typedef struct Tapete Tapete;
 
 typedef struct Jogador Jogador;
 
@@ -18,7 +20,7 @@ Assam *criarAssam(Tabuleiro *);
 
 Jogador *criarJogadores(int);
 
-int imprimirTabuleiro(Tabuleiro *, Assam *);
+int imprimirTabuleiro(Tabuleiro *, Assam *, int);
 
 int imprimirMenu(Jogador *, int);
 
@@ -32,4 +34,7 @@ int avancarAssam(Assam *, int);
 
 char maiusculo(char);
 
+int verificacaoTapete(Assam*, int, int);
+
+int colocarTapete(Assam*, int, int, Jogador*, int);
 #endif
