@@ -34,5 +34,7 @@ int avancarAssam(Assam *, int);
 
 char maiusculo(char);
 
+int verificacaoTapete(Assam*, int, int);
+
 int colocarTapete(Assam*, int, int, Jogador*, int);
 #endif

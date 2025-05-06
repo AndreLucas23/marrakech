@@ -161,6 +161,16 @@ Jogador *criarJogadores(int numJogadores)
     return jogadores;
 }
 
+
+void imprimirTapeteColorido(int cor, char msg[2]) {
+    switch (cor) {
+        case 1: printf("\x1b[38;2;0;200;50m%s\x1b[0m|", msg); break;
+        case 2: printf("\x1b[38;2;20;100;50m%s\x1b[0m|", msg); break;
+        case 3: printf("\x1b[38;2;70;20;100m%s\x1b[0m|", msg); break;
+        case 4: printf("\x1b[38;2;250;50;0m%s\x1b[0m|", msg); break;
+        default: printf("T|"); break;
+    }
+}
 int imprimirTabuleiro(Tabuleiro *tabuleiro, Assam *assam, int acao)
 {
     if (tabuleiro == NULL || assam == NULL)
@@ -205,49 +215,37 @@ int imprimirTabuleiro(Tabuleiro *tabuleiro, Assam *assam, int acao)
                 }
                 else if (q->tapetes->altura == 0)
                     printf(" |");
-                else if (q->tapetes->tapete)
-                    switch (q->tapetes->tapete->cor)
-                    {
-                    case 1:
-                        printf("\x1b[38;2;0;200;50mT\x1b[0m|");
-                        break;
-                    case 2:
-                        printf("\x1b[38;2;20;100;50mT\x1b[0m|");
-                        break;
-                    case 3:
-                        printf("\x1b[38;2;70;20;100mT\x1b[0m|");
-                        break;
-                    case 4:
-                        printf("\x1b[38;2;250;50;0mT\x1b[0m|");
-                        break;
-                    }
-
-                    ;
+                else if (q->tapetes->altura)
+                    imprimirTapeteColorido(q->tapetes->tapete->cor,"T");
             }
             else
-            {
+            {   
+                
                 if (q == assam->posicao)
                 {
-                    printf("0|");
+                    
+                    
+                    (q->tapetes->altura) ? imprimirTapeteColorido(q->tapetes->tapete->cor,"0|") : printf("0|");
+                    
                 }
                 else if (q == assam->posicao->norte)
                 {
-                    printf("1|");
+                    (q->tapetes->altura) ? imprimirTapeteColorido(q->tapetes->tapete->cor,"1|") : printf("1|");
                 }
                 else if (q == assam->posicao->oeste)
                 {
-                    printf("4|");
+                    (q->tapetes->altura) ? imprimirTapeteColorido(q->tapetes->tapete->cor,"4|") : printf("4|");
                 }
                 else if (q == assam->posicao->sul)
                 {
-                    printf("3|");
+                    (q->tapetes->altura) ? imprimirTapeteColorido(q->tapetes->tapete->cor,"3|") : printf("3|");
                 }
                 else if (q == assam->posicao->leste)
                 {
-                    printf("2|");
+                    (q->tapetes->altura) ? imprimirTapeteColorido(q->tapetes->tapete->cor,"2|") : printf("2|");
                 }
                 else
-                    printf(" |");
+                    (q->tapetes->altura) ? imprimirTapeteColorido(q->tapetes->tapete->cor,"T") : printf(" |");
             }
             q = q->leste;
         }
@@ -392,6 +390,76 @@ char maiusculo(char letra)
     return toupper((unsigned char)letra);
 }
 
+int verificacaoTapete(Assam *assam, int posicao, int rotacao){
+
+    if (assam == NULL)
+    {
+        return 0;
+    }
+    No *tapetePonto;
+    switch (posicao)
+    {
+    case (1):
+
+        tapetePonto = assam->posicao->norte;
+
+        break;
+    case (2):
+        tapetePonto = assam->posicao->leste;
+
+        break;
+    case (3):
+        tapetePonto = assam->posicao->sul;
+
+        break;
+    case (4):
+        tapetePonto = assam->posicao->oeste;
+
+        break;
+    case (0):
+
+        tapetePonto = assam->posicao;
+
+        break;
+    default:
+        printf("Rotação inválida: %d\n", rotacao);
+        return 0;
+    }
+    switch (rotacao)
+    {
+    case (1):
+        if (tapetePonto->norte->tapetes->tapete->metade == tapetePonto)
+        {
+            return 0;
+        }
+
+        break;
+    case (2):
+        if (tapetePonto->leste->tapetes->tapete->metade == tapetePonto)
+        {
+            return 0;
+        }
+
+        break;
+    case (3):
+        if (tapetePonto->sul->tapetes->tapete->metade == tapetePonto)
+        {
+            return 0;
+        }
+        break;
+    case (4):
+        if (tapetePonto->oeste->tapetes->tapete->metade == tapetePonto)
+        {
+            return 0;
+        }
+        break;
+    default:
+        printf("Rotação inválida: %d\n", rotacao);
+        return 0;
+    }
+    return 1;
+}
+
 int colocarTapete(Assam *assam, int posicao, int rotacao, Jogador *jogador, int turno)
 {
     if (assam == NULL)
@@ -432,7 +500,6 @@ int colocarTapete(Assam *assam, int posicao, int rotacao, Jogador *jogador, int 
         printf("Rotação inválida: %d\n", rotacao);
         break;
     }
-
     tapetePonto->tapetes->tapete = tapete;
     tapetePonto->tapetes->altura++;
 
@@ -468,4 +535,5 @@ int colocarTapete(Assam *assam, int posicao, int rotacao, Jogador *jogador, int 
     }
     tapeteMetade->metade = tapetePonto;
     jogador[turno].tapetes--;
+    return 1;
 }
