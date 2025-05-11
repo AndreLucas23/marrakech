@@ -1,16 +1,17 @@
 #ifndef MARRAKECH_H
 #define MARRAKECH_H
+
 #define TAM 5
 
 typedef struct No No;
 
 typedef struct Tapetes Tapetes;
 
+typedef struct Tapete Tapete;
+
 typedef struct Assam Assam;
 
 typedef struct Tabuleiro Tabuleiro;
-
-typedef struct Tapete Tapete;
 
 typedef struct Jogador Jogador;
 
@@ -18,23 +19,28 @@ Tabuleiro *criarTabuleiro(int);
 
 Assam *criarAssam(Tabuleiro *);
 
-Jogador *criarJogadores(int);
+Jogador **criarJogadores(int);
 
 int imprimirTabuleiro(Tabuleiro *, Assam *, int);
 
-int imprimirMenu(Jogador *, int);
+int imprimirMenu(Jogador **, int);
+
+void imprimirColorido(int, char *);
 
 char perguntarGiro(Assam *assam);
 
 int girarAssam(Assam *, char);
 
-int rolarDado();
+int avancarAssam(Tabuleiro *, Assam *, int);
 
-int avancarAssam(Assam *, int);
+No *posicaoTapete(Tabuleiro *, Assam *);
+
+No *sentidoTapete(Tabuleiro *, Assam *, No *);
+
+int colocarTapete(Assam *, No *, No *, Jogador *);
+
+int rolarDado();
 
 char maiusculo(char);
 
-int verificacaoTapete(Assam*, int, int);
-
-int colocarTapete(Assam*, int, int, Jogador*, int);
 #endif
