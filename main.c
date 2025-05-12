@@ -13,9 +13,9 @@ int main()
     No *tapeteMetade1, *tapeteMetade2;
     int numJogadores, turno = 0, dado;
 
-    printf("\n          MARRAKECH          \n\n");
+    printf("\n           MARRAKECH           \n\n");
     while (1) {
-        printf("Digite a quantidade de jogadores(2 - 4): ");
+        printf("Digite a quantidade de jogadores ( 2 - 4 ): ");
         scanf("%d", &numJogadores);
         while (getchar() != '\n');
 
@@ -43,6 +43,8 @@ int main()
         imprimirTabuleiro(tabuleiro, assam, 1);
         printf("\n");
 
+        pagar(tabuleiro, assam, jogadores[turno]);
+
         tapeteMetade1 = posicaoTapete(tabuleiro, assam);
         printf("\n");
         tapeteMetade2 = sentidoTapete(tabuleiro, assam, tapeteMetade1);
@@ -54,6 +56,8 @@ int main()
         scanf("%*c");
 
         turno = (turno == numJogadores - 1) ? 0 : turno + 1;
+        while (!jogando(jogadores[turno]))
+            turno = (turno == numJogadores - 1) ? 0 : turno + 1;
     }
 
     return 0;

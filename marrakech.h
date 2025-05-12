@@ -21,6 +21,8 @@ Assam *criarAssam(Tabuleiro *);
 
 Jogador **criarJogadores(int);
 
+Tapetes *criarPilha();
+
 int imprimirTabuleiro(Tabuleiro *, Assam *, int);
 
 int imprimirMenu(Jogador **, int);
@@ -38,6 +40,20 @@ No *posicaoTapete(Tabuleiro *, Assam *);
 No *sentidoTapete(Tabuleiro *, Assam *, No *);
 
 int colocarTapete(Assam *, No *, No *, Jogador *);
+
+int calcularArea(Tabuleiro *, No *);
+
+int calcularAreaUtil(Tabuleiro *, No *, int, int ***);
+
+int inserirTapete(Tapetes *, Tapete *);
+
+Tapete *topo(Tapetes *);
+
+int altura(Tapetes *);
+
+int jogando(Jogador *);
+
+int pagar(Tabuleiro *, Assam *, Jogador *);
 
 int rolarDado();
 

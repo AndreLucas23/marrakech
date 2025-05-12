@@ -13,15 +13,16 @@ struct No {
     int y;
 };
 
-struct Tapetes {
-    Tapete *topo;
-    int altura;
-};
-
 struct Tapete {
     int cor;
     Jogador *jogador;
     Tapete *metade;
+    Tapete *abaixo;
+};
+
+struct Tapetes {
+    Tapete *pilhaTapetes;
+    int altura;
 };
 
 struct Assam {
@@ -39,6 +40,7 @@ struct Jogador {
     int cor;
     int tapetes;
     int dinheiro;
+    int jogando;
 };
 
 
@@ -75,28 +77,17 @@ Tabuleiro *criarTabuleiro(int tam) {
 
             nos[i][j].sul = (i != tam - 1) ? &nos[i + 1][j] :
             (j == tam - 1 || (tam % 2 == 0 && j == 0)) ? &nos[i][j] :
-            (j % 2 == 0) ? &nos[i][j - 1] : &nos[i][j + 1];
+            (j % 2 == 0) ? &nos[i][j + 1] : &nos[i][j - 1];
 
             nos[i][j].oeste = (j != 0) ? &nos[i][j - 1] :
             (i == 0 || (tam % 2 == 0 && i == tam - 1)) ? &nos[i][j] :
-            (i % 2 == 0) ? &nos[i - 1][j] : &nos[i - 1][j];
+            (i % 2 == 0) ? &nos[i - 1][j] : &nos[i + 1][j];
 
             nos[i][j].leste = (j != tam - 1) ? &nos[i][j + 1] :
             (i == tam - 1 || (tam % 2 == 0 && i == 0)) ? &nos[i][j] :
-            (i % 2 == 0) ? &nos[i - 1][j] : &nos[i + 1][j];
+            (i % 2 == 0) ? &nos[i + 1][j] : &nos[i - 1][j];
 
-            nos[i][j].tapetes = (Tapetes *)malloc(sizeof(Tapetes));
-            if (nos[i][j].tapetes == NULL) {
-                for (k = 0; k < i; k++) {
-                    for (l = 0; l < tam; l++) {
-                        if (k >= i && l > j) break;
-                        free(&nos[k][l]);
-                    }
-                }
-            }
-
-            nos[i][j].tapetes->topo = (Tapete *)malloc(sizeof(Tapete));
-            nos[i][j].tapetes->altura = 0;
+            nos[i][j].tapetes = criarPilha();
 
             nos[i][j].x = i;
             nos[i][j].y = j;
@@ -155,10 +146,7 @@ Jogador **criarJogadores(int numJogadores) {
     for (i = 0; i < numJogadores; i++) {
         jogadores[i] = (Jogador *)malloc(sizeof(Jogador));
         if (!jogadores[i]) {
-            for (j = 0; j < numJogadores; j++) {
-                free(jogadores[j]);
-            }
-
+            for (j = 0; j < numJogadores; j++) free(jogadores[j]);
             return NULL;
         }
 
@@ -166,9 +154,19 @@ Jogador **criarJogadores(int numJogadores) {
         jogadores[i]->tapetes = (numJogadores == 2 || numJogadores == 4) ? 48 / numJogadores : 15;
         jogadores[i]->dinheiro = 30;
         jogadores[i]->cor = i + 1;
+        jogadores[i]->jogando = 1;
     }
 
     return jogadores;
+}
+
+Tapetes *criarPilha() {
+    Tapetes *pilha = (Tapetes *)malloc(sizeof(Tapetes));
+
+    pilha->pilhaTapetes = NULL;
+    pilha->altura = 0;
+
+    return pilha;
 }
 
 int imprimirTabuleiro(Tabuleiro *tabuleiro, Assam *assam, int acao) {
@@ -191,30 +189,28 @@ int imprimirTabuleiro(Tabuleiro *tabuleiro, Assam *assam, int acao) {
                 if (q == assam->posicao) {
                     switch (assam->sentido) {
                         case ('N'):
-                            if (assam->posicao->tapetes->altura) imprimirColorido(assam->posicao->tapetes->topo->cor, "^");
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, "^");
                             else printf("^");
 
                             break;
                         case ('S'):
-                            if (assam->posicao->tapetes->altura) imprimirColorido(assam->posicao->tapetes->topo->cor, "v");
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, "v");
                             else printf("v");
 
                             break;
                         case ('L'):
-                            if (assam->posicao->tapetes->altura) imprimirColorido(assam->posicao->tapetes->topo->cor, ">");
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, ">");
                             else printf(">");
 
                             break;
                         case ('O'):
-                            if (assam->posicao->tapetes->altura) imprimirColorido(assam->posicao->tapetes->topo->cor, "<");
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, "<");
                             else printf("<");
 
                             break;
                     }
-                }
-
-                else if (q->tapetes->altura == 0) printf(" ");
-                else if (q->tapetes->altura) imprimirColorido(q->tapetes->topo->cor, "T");
+                } else if (!altura(q->tapetes)) printf(" ");
+                else if (altura(q->tapetes)) imprimirColorido(topo(q->tapetes)->cor, "T");
 
                 printf("|");
             } else if (acao == 1) {   
@@ -226,12 +222,36 @@ int imprimirTabuleiro(Tabuleiro *tabuleiro, Assam *assam, int acao) {
 
                 if (assam->posicao->y == 0) valido4 = 0;
 
-                if (q == assam->posicao) (q->tapetes->altura) ? imprimirColorido(q->tapetes->topo->cor,"0|") : printf("0|");
-                else if (q == assam->posicao->norte && valido1) (q->tapetes->altura) ? imprimirColorido(q->tapetes->topo->cor,"1|") : printf("1|");
-                else if (q == assam->posicao->leste && valido2) (q->tapetes->altura) ? imprimirColorido(q->tapetes->topo->cor,"2|") : printf("2|");
-                else if (q == assam->posicao->sul && valido3) (q->tapetes->altura) ? imprimirColorido(q->tapetes->topo->cor,"3|") : printf("3|");
-                else if (q == assam->posicao->oeste && valido4) (q->tapetes->altura) ? imprimirColorido(q->tapetes->topo->cor,"4|") : printf("4|");
-                else (q->tapetes->altura) ? imprimirColorido(q->tapetes->topo->cor,"T|") : printf(" |");
+                if (q == assam->posicao) {
+                    switch (assam->sentido) {
+                        case ('N'):
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, "^");
+                            else printf("^");
+
+                            break;
+                        case ('S'):
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, "v");
+                            else printf("v");
+
+                            break;
+                        case ('L'):
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, ">");
+                            else printf(">");
+
+                            break;
+                        case ('O'):
+                            if (altura(assam->posicao->tapetes)) imprimirColorido(topo(assam->posicao->tapetes)->cor, "<");
+                            else printf("<");
+
+                            break;
+                    }
+                } else if (q == assam->posicao->norte && valido1) (altura(q->tapetes)) ? imprimirColorido(topo(q->tapetes)->cor,"1") : printf("1");
+                else if (q == assam->posicao->leste && valido2) (altura(q->tapetes)) ? imprimirColorido(topo(q->tapetes)->cor,"2") : printf("2");
+                else if (q == assam->posicao->sul && valido3) (altura(q->tapetes)) ? imprimirColorido(topo(q->tapetes)->cor,"3") : printf("3");
+                else if (q == assam->posicao->oeste && valido4) (altura(q->tapetes)) ? imprimirColorido(topo(q->tapetes)->cor,"4") : printf("4");
+                else (altura(q->tapetes)) ? imprimirColorido(topo(q->tapetes)->cor,"T") : printf(" ");
+
+                printf("|");
             }
             
             q = q->leste;
@@ -435,28 +455,28 @@ No *posicaoTapete(Tabuleiro *tabuleiro, Assam *assam) {
     if (assam->posicao->y == 0) valido4 = 0;
 
     while (1) {
-        printf("Onde deseja colocar o tapete [ 0 ");
-        if (valido1) printf("/ 1 ");
-        if (valido2) printf("/ 2 ");
-        if (valido3) printf("/ 3 ");
-        if (valido4) printf("/ 4 ");
+        printf("Onde deseja colocar o tapete [");
+        if (valido1) printf(" 1 /");
+        if (valido2) printf(" 2 /");
+        if (valido3) printf(" 3 /");
+        if (valido4) printf(" 4 ");
         printf("]? ");
 
         scanf("%d", &posicaoTapete);
-        
+        while (getchar() != '\n');
+
         if (posicaoTapete == 0 || posicaoTapete == 1 && valido1 || posicaoTapete == 2 && valido2 ||
         posicaoTapete == 3 && valido3 || posicaoTapete == 4 && valido4) break;
 
-        printf("\nPor favor, digite uma das posições entre 0");
-        if (valido1) printf(", 1");
-        if (valido2) printf(", 2");
-        if (valido3) printf(", 3");
-        if (valido4) printf(", 4");
+        printf("\nPor favor, digite uma das posições entre");
+        if (valido1) printf(" 1,");
+        if (valido2) printf(" 2,");
+        if (valido3) printf(" 3,");
+        if (valido4) printf(" 4");
         printf("\n");
     }
 
-    if (posicaoTapete == 0) tapetePonto = assam->posicao;
-    else if (posicaoTapete == 1) tapetePonto = assam->posicao->norte;
+    if (posicaoTapete == 1) tapetePonto = assam->posicao->norte;
     else if (posicaoTapete == 2) tapetePonto = assam->posicao->leste;
     else if (posicaoTapete == 3) tapetePonto = assam->posicao->sul;
     else if (posicaoTapete == 4) tapetePonto = assam->posicao->oeste;
@@ -471,13 +491,17 @@ No *sentidoTapete(Tabuleiro *tabuleiro, Assam *assam, No *posicaoTapete) {
     No *tapeteMetade;
     int sentidoTapete, valido1, valido2, valido3, valido4;
 
-    if (posicaoTapete->x == 0) valido1 = 0;
+    if (posicaoTapete->x == 0 ||
+    posicaoTapete->norte == assam->posicao) valido1 = 0;
 
-    if (posicaoTapete->y == tabuleiro->tam - 1) valido2 = 0;
+    if (posicaoTapete->y == tabuleiro->tam - 1 ||
+    posicaoTapete->leste == assam->posicao) valido2 = 0;
 
-    if (posicaoTapete->x == tabuleiro->tam - 1) valido3 = 0;
+    if (posicaoTapete->x == tabuleiro->tam - 1 ||
+    posicaoTapete->sul == assam->posicao) valido3 = 0;
 
-    if (posicaoTapete->y == 0) valido4 = 0;
+    if (posicaoTapete->y == 0 ||
+    posicaoTapete->oeste == assam->posicao) valido4 = 0;
 
     while (1) {
         if (valido1) printf("1) ^\n");
@@ -487,15 +511,24 @@ No *sentidoTapete(Tabuleiro *tabuleiro, Assam *assam, No *posicaoTapete) {
 
         printf("Digite o sentido do tapete: ");
         scanf("%d", &sentidoTapete);
+        while (getchar() != '\n');
 
         if ((sentidoTapete == 1 &&
-        posicaoTapete->tapetes->topo->metade == posicaoTapete->norte->tapetes->topo) ||
-        (sentidoTapete == 2 && 
-        posicaoTapete->tapetes->topo->metade == posicaoTapete->leste->tapetes->topo) ||
+        topo(posicaoTapete->tapetes) &&
+        topo(posicaoTapete->norte->tapetes) &&
+        topo(posicaoTapete->tapetes)->metade == topo(posicaoTapete->norte->tapetes)) ||
+        (sentidoTapete == 2 &&
+        topo(posicaoTapete->tapetes) &&
+        topo(posicaoTapete->leste->tapetes) &&
+        topo(posicaoTapete->tapetes)->metade == topo(posicaoTapete->leste->tapetes)) ||
         (sentidoTapete == 3 &&
-        posicaoTapete->tapetes->topo->metade == posicaoTapete->sul->tapetes->topo) ||
+        topo(posicaoTapete->tapetes) &&
+        topo(posicaoTapete->sul->tapetes) &&
+        topo(posicaoTapete->tapetes)->metade == topo(posicaoTapete->sul->tapetes)) ||
         (sentidoTapete == 4 &&
-        posicaoTapete->tapetes->topo->metade == posicaoTapete->oeste->tapetes->topo)) {
+        topo(posicaoTapete->tapetes) &&
+        topo(posicaoTapete->oeste->tapetes) &&
+        topo(posicaoTapete->tapetes)->metade == topo(posicaoTapete->oeste->tapetes))) {
             printf("\nUm tapete não pode ser sobreposto por outro\n");
             continue;
         }
@@ -518,29 +551,138 @@ int colocarTapete(Assam *assam, No *posicaoTapete, No *tapeteMetade, Jogador *jo
     if (!assam) return 0;
 
     Tapete *metade1 = (Tapete *)malloc(sizeof(Tapete));
-    if (metade1 == NULL) return 0;
+    if (!metade1) return 0;
 
     metade1->jogador = jogador;
     metade1->cor = jogador->cor;
+    metade1->abaixo = NULL;
 
     Tapete *metade2 = (Tapete *)malloc(sizeof(Tapete));
-    if (metade2 == NULL) return 0;
+    if (!metade2) return 0;
 
     metade2->jogador = jogador;
     metade2->cor = jogador->cor;
+    metade2->abaixo = NULL;
 
     metade1->metade = metade2;
     metade2->metade = metade1;
 
-    posicaoTapete->tapetes->topo = metade1;
-    posicaoTapete->tapetes->altura++;
-
-    tapeteMetade->tapetes->topo = metade2;
-    tapeteMetade->tapetes->altura++;
+    inserirTapete(posicaoTapete->tapetes, metade1);
+    inserirTapete(tapeteMetade->tapetes, metade2);
 
     jogador->tapetes--;
     
     return 1;
+}
+
+int calcularArea(Tabuleiro *tabuleiro, No *posicao) {
+    int i, j, **visitados = (int **)malloc(tabuleiro->tam * sizeof(int *));
+    if (!visitados) return 0;
+
+    if (!altura(posicao->tapetes)) return 0;
+
+    int areaNorte, areaSul, areaLeste, areaOeste;
+
+    for (i = 0; i < tabuleiro->tam; i++) {
+        visitados[i] = (int *)malloc(tabuleiro->tam * sizeof(int));
+        if (!visitados[i]) {
+            for (j = 0; j < tabuleiro->tam; j++) free(visitados[j]);
+            return 0;
+        }
+    }
+
+    for (i = 0; i < tabuleiro->tam; i++) {
+        for (j = 0; j < tabuleiro->tam; j++) {
+            visitados[i][j] = 0;
+        }
+    }
+
+    visitados[posicao->x][posicao->y] = 1;
+
+    areaNorte = (posicao->x != 0) ?
+    calcularAreaUtil(tabuleiro, posicao->norte, topo(posicao->tapetes)->cor, &visitados) : 0;
+    areaSul = (posicao->x != tabuleiro->tam - 1) ?
+    calcularAreaUtil(tabuleiro, posicao->sul, topo(posicao->tapetes)->cor, &visitados) : 0;
+    areaLeste = (posicao->y != tabuleiro->tam - 1) ?
+    calcularAreaUtil(tabuleiro, posicao->leste, topo(posicao->tapetes)->cor, &visitados) : 0;
+    areaOeste = (posicao->y != 0) ?
+    calcularAreaUtil(tabuleiro, posicao->oeste, topo(posicao->tapetes)->cor, &visitados) : 0;
+
+    return 1 + areaNorte + areaSul + areaLeste + areaOeste;
+}
+
+int calcularAreaUtil(Tabuleiro *tabuleiro, No *posicao, int cor, int ***visitados) {
+    int areaNorte, areaSul, areaLeste, areaOeste;
+
+    if ((*visitados)[posicao->x][posicao->y] ||
+    !altura(posicao->tapetes) ||
+    topo(posicao->tapetes)->cor != cor) return 0;
+
+    (*visitados)[posicao->x][posicao->y] = 1;
+
+    areaNorte = (posicao->x != 0) ?
+    calcularAreaUtil(tabuleiro, posicao->norte, cor, visitados) : 0;
+    areaSul = (posicao->x != tabuleiro->tam - 1) ?
+    calcularAreaUtil(tabuleiro, posicao->sul, cor, visitados) : 0;
+    areaLeste = (posicao->y != tabuleiro->tam - 1) ?
+    calcularAreaUtil(tabuleiro, posicao->leste, cor, visitados) : 0;
+    areaOeste = (posicao->y != 0 ) ?
+    calcularAreaUtil(tabuleiro, posicao->oeste, cor, visitados) : 0;
+
+    return 1 + areaNorte + areaSul + areaLeste + areaOeste;
+}
+
+int pagar(Tabuleiro *tabuleiro, Assam *assam, Jogador *jogador1) {
+    if (!tabuleiro || !jogador1) return 0;
+
+    if (!altura(assam->posicao->tapetes) ||
+    topo(assam->posicao->tapetes)->jogador == jogador1) return 0;
+
+    Jogador *jogador2 = topo(assam->posicao->tapetes)->jogador;
+
+    int valor = calcularArea(tabuleiro, assam->posicao);
+
+    if (jogador1->dinheiro >= valor) {
+        jogador1->dinheiro -= valor;
+        
+        jogador2->dinheiro += valor;
+    } else {
+        jogador2->dinheiro += jogador1->dinheiro;
+
+        jogador1->dinheiro = 0;
+
+        jogador1->jogando = 0;
+    }
+
+    printf("O jogador %d pagou %d moedas ao jogador %d!\n\n", jogador1->cor, valor, jogador2->cor);
+
+    return 1;
+}
+
+int inserirTapete(Tapetes *pilha, Tapete *tapete) {
+    if (!pilha) return 0;
+
+    tapete->abaixo = pilha->pilhaTapetes;
+    pilha->pilhaTapetes = tapete;
+
+    pilha->altura++;
+
+    return 1;
+}
+
+Tapete *topo(Tapetes *pilha) {
+    if (!pilha) return NULL;
+
+    return pilha->pilhaTapetes;
+}
+
+int altura(Tapetes *pilha) {
+    return pilha->altura;
+}
+
+int jogando(Jogador *jogador) {
+    if (jogador->jogando) return 1;
+    else return 0;
 }
 
 int rolarDado() {
