@@ -71,19 +71,19 @@ Tabuleiro *criarTabuleiro(int tam) {
         for (j = 0; j < tam; j++) {
             nos[i][j].norte = (i != 0) ? &nos[i - 1][j] :
             (j == 0 || (tam % 2 == 0 && j == tam - 1)) ? &nos[i][j] :
-            (j % 2 == 1) ? &nos[i][j + 1] : &nos[i][j - 1];
+            (j % 2 == 0) ? &nos[i][j - 1] : &nos[i][j + 1];
 
             nos[i][j].sul = (i != tam - 1) ? &nos[i + 1][j] :
             (j == tam - 1 || (tam % 2 == 0 && j == 0)) ? &nos[i][j] :
-            (j % 2 == 0) ? &nos[i][j + 1] : &nos[i][j - 1];
+            (j % 2 == 0) ? &nos[i][j - 1] : &nos[i][j + 1];
 
             nos[i][j].oeste = (j != 0) ? &nos[i][j - 1] :
             (i == 0 || (tam % 2 == 0 && i == tam - 1)) ? &nos[i][j] :
-            (i % 2 == 1) ? &nos[i + 1][j] : &nos[i - 1][j];
+            (i % 2 == 0) ? &nos[i - 1][j] : &nos[i - 1][j];
 
             nos[i][j].leste = (j != tam - 1) ? &nos[i][j + 1] :
             (i == tam - 1 || (tam % 2 == 0 && i == 0)) ? &nos[i][j] :
-            (i % 2 == 0) ? &nos[i + 1][j] : &nos[i - 1][j];
+            (i % 2 == 0) ? &nos[i - 1][j] : &nos[i + 1][j];
 
             nos[i][j].tapetes = (Tapetes *)malloc(sizeof(Tapetes));
             if (nos[i][j].tapetes == NULL) {
@@ -117,8 +117,28 @@ Assam *criarAssam(Tabuleiro *tabuleiro) {
         return NULL;
     }
 
+    int sentido = rand() % 4 + 1;
+
     assam->posicao = tabuleiro->central;
-    assam->sentido = 'N';
+
+    switch (sentido) {
+        case (1):
+            assam->sentido = 'N';
+
+            break;
+        case (2):
+            assam->sentido = 'S';
+
+            break;
+        case (3):
+            assam->sentido = 'L';
+
+            break;
+        case (4):
+            assam->sentido = 'O';
+
+            break;
+    }
 
     return assam;
 }
@@ -427,7 +447,7 @@ No *posicaoTapete(Tabuleiro *tabuleiro, Assam *assam) {
         if (posicaoTapete == 0 || posicaoTapete == 1 && valido1 || posicaoTapete == 2 && valido2 ||
         posicaoTapete == 3 && valido3 || posicaoTapete == 4 && valido4) break;
 
-        printf("Por favor, digite uma das posições entre 0");
+        printf("\nPor favor, digite uma das posições entre 0");
         if (valido1) printf(", 1");
         if (valido2) printf(", 2");
         if (valido3) printf(", 3");
@@ -468,10 +488,22 @@ No *sentidoTapete(Tabuleiro *tabuleiro, Assam *assam, No *posicaoTapete) {
         printf("Digite o sentido do tapete: ");
         scanf("%d", &sentidoTapete);
 
+        if ((sentidoTapete == 1 &&
+        posicaoTapete->tapetes->topo->metade == posicaoTapete->norte->tapetes->topo) ||
+        (sentidoTapete == 2 && 
+        posicaoTapete->tapetes->topo->metade == posicaoTapete->leste->tapetes->topo) ||
+        (sentidoTapete == 3 &&
+        posicaoTapete->tapetes->topo->metade == posicaoTapete->sul->tapetes->topo) ||
+        (sentidoTapete == 4 &&
+        posicaoTapete->tapetes->topo->metade == posicaoTapete->oeste->tapetes->topo)) {
+            printf("\nUm tapete não pode ser sobreposto por outro\n");
+            continue;
+        }
+
         if (sentidoTapete == 1 && valido1 || sentidoTapete == 2 && valido2 ||
         sentidoTapete == 3 && valido3 || sentidoTapete == 4 && valido4) break;
 
-        printf("Por favor, digite um sentido válido\n");
+        printf("\nPor favor, digite um sentido válido\n");
     }
 
     if (sentidoTapete == 1) tapeteMetade = posicaoTapete->norte;

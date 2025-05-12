@@ -1,10 +1,14 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
+#include <time.h>
 #include "marrakech.h"
 
 int main()
 {
     setlocale(LC_ALL, "Portuguese_Brazil.1252");
+
+    srand(time(NULL));
 
     No *tapeteMetade1, *tapeteMetade2;
     int numJogadores, turno = 0, dado;
@@ -13,8 +17,7 @@ int main()
     while (1) {
         printf("Digite a quantidade de jogadores(2 - 4): ");
         scanf("%d", &numJogadores);
-        while (getchar() != '\n')
-            ;
+        while (getchar() != '\n');
 
         if (numJogadores >= 2 && numJogadores <= 4)
             break;
@@ -31,14 +34,17 @@ int main()
         imprimirMenu(jogadores, turno);
         girarAssam(assam, perguntarGiro(assam));
         imprimirTabuleiro(tabuleiro, assam, 0);
+        printf("\n");
 
         dado = rolarDado();
         printf("Quantidade de casas a saltar: %d\n", dado);
 
         avancarAssam(tabuleiro, assam, dado);
         imprimirTabuleiro(tabuleiro, assam, 1);
+        printf("\n");
 
         tapeteMetade1 = posicaoTapete(tabuleiro, assam);
+        printf("\n");
         tapeteMetade2 = sentidoTapete(tabuleiro, assam, tapeteMetade1);
 
         colocarTapete(assam, tapeteMetade1, tapeteMetade2, jogadores[turno]);

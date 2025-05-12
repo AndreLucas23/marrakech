@@ -1,7 +1,7 @@
 #ifndef MARRAKECH_H
 #define MARRAKECH_H
 
-#define TAM 5
+#define TAM 7
 
 typedef struct No No;
 
