@@ -109,6 +109,8 @@ Tabuleiro *criarTabuleiro(int tam) {
 }
 
 Assam *criarAssam(Tabuleiro *tabuleiro) {
+    if (!tabuleiro) return NULL;
+
     Assam *assam = (Assam *)malloc(sizeof(Assam));
     if (!assam) {
         free(assam);
@@ -289,7 +291,7 @@ int imprimirTabuleiro(Tabuleiro *tabuleiro, Assam *assam, int acao) {
 }
 
 int imprimirMenu(Jogadores *jogadores, int turno) {
-    if (!jogadores)return 0;
+    if (!jogadores) return 0;
 
     printf("------------------\n");
     printf("JOGADOR %d\n", turno + 1);
@@ -301,6 +303,8 @@ int imprimirMenu(Jogadores *jogadores, int turno) {
 }
 
 int imprimirFim(Jogadores *jogadores, int numVencedor) {
+    if (!jogadores) return 0;
+
     int i;
 
     printf("\n   FIM DE JOGO\n\n");
@@ -415,7 +419,7 @@ int girarAssam(Assam *assam, char sentido) {
 }
 
 int avancarAssam(Tabuleiro *tabuleiro, Assam *assam, int casas) {
-    if (!assam) return 0;
+    if (!tabuleiro || !assam) return 0;
 
     No *posAnterior;
     int i;
@@ -536,7 +540,7 @@ No *posicaoTapete(Tabuleiro *tabuleiro, Assam *assam) {
 }
 
 No *sentidoTapete(Tabuleiro *tabuleiro, Assam *assam, No *posicaoTapete) {
-    if (!tabuleiro || !assam) return NULL;
+    if (!tabuleiro || !assam || !posicaoTapete) return NULL;
 
     No *tapeteMetade;
     int sentidoTapete, valido1, valido2, valido3, valido4;
@@ -598,7 +602,7 @@ No *sentidoTapete(Tabuleiro *tabuleiro, Assam *assam, No *posicaoTapete) {
 }
 
 int colocarTapete(Assam *assam, No *posicaoTapete, No *tapeteMetade, Jogador *jogador) {
-    if (!assam) return 0;
+    if (!assam || !posicaoTapete || !tapeteMetade) return 0;
 
     Tapete *metade1 = (Tapete *)malloc(sizeof(Tapete));
     if (!metade1) return 0;
@@ -628,6 +632,8 @@ int colocarTapete(Assam *assam, No *posicaoTapete, No *tapeteMetade, Jogador *jo
 }
 
 int calcularArea(Tabuleiro *tabuleiro, No *posicao) {
+    if (!tabuleiro) return 0;
+
     int i, j, **visitados = (int **)malloc(tabuleiro->tam * sizeof(int *));
     if (!visitados) return 0;
 
@@ -664,6 +670,8 @@ int calcularArea(Tabuleiro *tabuleiro, No *posicao) {
 }
 
 int calcularAreaUtil(Tabuleiro *tabuleiro, No *posicao, int cor, int ***visitados) {
+    if (!tabuleiro || !posicao || !visitados) return 0;
+
     int areaNorte, areaSul, areaLeste, areaOeste;
 
     if ((*visitados)[posicao->x][posicao->y] ||
@@ -803,6 +811,8 @@ int altura(Tapetes *pilha) {
 }
 
 Jogador *jogadorAtual(Jogadores *jogadores, int turno) {
+    if (!jogadores) return NULL;
+
     return jogadores->lista[turno];
 }
 
@@ -821,6 +831,8 @@ int rolarDado() {
 }
 
 int fimDeJogo(Jogadores *jogadores) {
+    if (!jogadores) return NULL;
+
     int i, fimTapetes = 1, fimAtivos = 1;
 
     for (i = 0; i < jogadores->numJogadores; i++) 
