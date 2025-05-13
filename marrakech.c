@@ -168,21 +168,11 @@ Jogadores *criarJogadores(int numJogadores) {
 
         jogadores->ativos = numJogadores;
 
-        //jogadores->lista[i]->tapetes = (numJogadores == 2 || numJogadores == 4) ? 48 / numJogadores : 15;
-        jogadores->lista[i]->tapetes = 1;
-        jogadores->lista[i]->dinheiro = 8;
+        jogadores->lista[i]->tapetes = (numJogadores == 2 || numJogadores == 4) ? 48 / numJogadores : 15;
+        jogadores->lista[i]->dinheiro = 30;
         jogadores->lista[i]->indice = i;
         jogadores->lista[i]->jogando = 1;
     }
-
-    jogadores->lista[0]->dinheiro = 1;
-    jogadores->lista[1]->dinheiro = 1;
-    jogadores->lista[2]->dinheiro = 2;
-    jogadores->lista[3]->dinheiro = 5;
-    jogadores->lista[0]->tapetes = 2;
-    jogadores->lista[1]->tapetes = 3;
-    jogadores->lista[2]->tapetes = 1;
-    jogadores->lista[3]->tapetes = 1;
 
     return jogadores;
 }
