@@ -15,17 +15,21 @@ typedef struct Tabuleiro Tabuleiro;
 
 typedef struct Jogador Jogador;
 
+typedef struct Jogadores Jogadores;
+
 Tabuleiro *criarTabuleiro(int);
 
 Assam *criarAssam(Tabuleiro *);
 
-Jogador **criarJogadores(int);
+Jogadores *criarJogadores(int);
 
 Tapetes *criarPilha();
 
 int imprimirTabuleiro(Tabuleiro *, Assam *, int);
 
-int imprimirMenu(Jogador **, int);
+int imprimirMenu(Jogadores *, int);
+
+int imprimirFim(Jogadores *, int);
 
 void imprimirColorido(int, char *);
 
@@ -47,16 +51,20 @@ int calcularAreaUtil(Tabuleiro *, No *, int, int ***);
 
 int inserirTapete(Tapetes *, Tapete *);
 
+int contarPontos(Tabuleiro *, Jogadores *);
+
 Tapete *topo(Tapetes *);
 
 int altura(Tapetes *);
 
+Jogador *jogadorAtual(Jogadores *, int);
+
 int jogando(Jogador *);
 
-int pagar(Tabuleiro *, Assam *, Jogador *);
+int pagar(Tabuleiro *, Assam *, Jogadores *, int);
 
 int rolarDado();
 
-char maiusculo(char);
+int fimDeJogo(Jogadores *);
 
 #endif
