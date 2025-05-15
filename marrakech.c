@@ -831,7 +831,7 @@ int rolarDado() {
 }
 
 int fimDeJogo(Jogadores *jogadores) {
-    if (!jogadores) return NULL;
+    if (!jogadores) return 0;
 
     int i, fimTapetes = 1, fimAtivos = 1;
 
