@@ -1,2 +1,2 @@
 # marrakech
-Jogo de tabuleiro para vários jogadores programado para console em C
+Board game for 2-4 players coded for C console
